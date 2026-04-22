@@ -39,17 +39,20 @@ body{
 .pfill{height:100%;background:#b07d3a;border-radius:3px;transition:width 0.4s ease}
 .plabel{font-size:0.72rem;color:#9a8e7e;white-space:nowrap}
 
-/* tabs — horizontal scroll on mobile */
 .tabs{
   display:flex;gap:8px;
   padding:0.9rem 1rem 0;
   width:100%;
+  justify-content:center;
+  flex-wrap:wrap;
   overflow-x:auto;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none;
-  align-self:center;
 }
 .tabs::-webkit-scrollbar{display:none}
+@media(max-width:500px){
+  .tabs{flex-wrap:nowrap;justify-content:flex-start;}
+}
 .tab-btn{
   font-family:'Instrument Sans',sans-serif;
   font-size:0.78rem;font-weight:500;
