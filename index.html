@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adjektivkartei</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;1,400&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Instrument Sans',sans-serif;
+  background:#f5f0e8;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+}
+
+.header{
+  width:100%;background:#fff;
+  padding:2rem 2rem 1.5rem;
+  text-align:center;border-bottom:1.5px solid #e8e0d0;
+}
+.header h1{
+  font-family:'Fraunces',serif;
+  font-size:clamp(1.8rem,4vw,2.8rem);
+  font-weight:700;color:#1a1208;letter-spacing:-0.01em;
+}
+.header h1 em{font-style:italic;color:#b07d3a}
+.tagline{font-size:0.8rem;color:#9a8e7e;letter-spacing:0.14em;text-transform:uppercase;margin-top:0.4rem}
+.designer{font-size:0.78rem;color:#c8440a;font-weight:500;margin-top:0.35rem;letter-spacing:0.02em}
+.progress-row{
+  display:flex;align-items:center;gap:10px;
+  width:min(460px,90%);margin:1.2rem auto 0;
+}
+.pbar{flex:1;height:3px;background:#e8e0d0;border-radius:3px;overflow:hidden}
+.pfill{height:100%;background:#b07d3a;border-radius:3px;transition:width 0.4s ease}
+.plabel{font-size:0.72rem;color:#9a8e7e;white-space:nowrap}
+
+.tabs{
+  display:flex;gap:8px;padding:1.2rem 1rem 0;
+  justify-content:center;flex-wrap:wrap;
+  width:100%;max-width:580px;
+  align-self:center;
+}
+.tab-btn{
+  font-family:'Instrument Sans',sans-serif;
+  font-size:0.75rem;font-weight:500;
+  padding:7px 18px;border-radius:100px;
+  border:1.5px solid #d9d0c0;
+  background:#fff;color:#9a8e7e;cursor:pointer;
+  transition:all 0.18s;letter-spacing:0.03em;
+}
+.tab-btn:hover{border-color:#b07d3a;color:#b07d3a}
+.tab-btn.active{background:#1a1208;color:#f5f0e8;border-color:#1a1208}
+
+.main{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;padding:2rem 1rem 3rem;
+  width:100%;max-width:580px;
+}
+
+/* CARD */
+.card{
+  width:100%;max-width:460px;
+  background:#ffffff;
+  border:1.5px solid #e8e0d0;
+  border-radius:18px;
+  box-shadow:0 4px 24px rgba(26,18,8,0.07);
+  padding:2.2rem 2rem 2rem;
+  margin-bottom:1.6rem;
+  position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,#b07d3a,#e8c87a);
+}
+
+.type-badge{
+  font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:#9a8e7e;border:1px solid #e8e0d0;
+  padding:3px 10px;border-radius:100px;
+  display:inline-block;margin-bottom:1.2rem;
+}
+
+.emoji-hint{
+  width:86px;height:86px;background:#f5f0e8;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:3rem;margin:0 auto 1.2rem;line-height:1;
+}
+
+.sentence{
+  font-family:'Fraunces',serif;
+  font-size:clamp(1.05rem,3vw,1.35rem);
+  font-weight:700;text-align:center;
+  line-height:1.6;color:#1a1208;margin-bottom:0.5rem;
+}
+.blank{
+  display:inline-block;min-width:90px;
+  border-bottom:2px solid #b07d3a;
+  color:#b07d3a;font-style:italic;padding:0 4px;transition:all 0.25s;
+}
+.blank.correct{color:#5a8a60;border-color:#5a8a60}
+.blank.wrong{color:#c8440a;border-color:#c8440a;text-decoration:line-through}
+
+.translation{
+  font-size:0.78rem;color:#9a8e7e;
+  text-align:center;font-style:italic;margin-bottom:1.5rem;
+}
+
+.options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt-btn{
+  font-family:'Fraunces',serif;
+  font-size:1rem;font-style:italic;
+  padding:12px 10px;border-radius:12px;
+  border:1.5px solid #e8e0d0;
+  background:#f5f0e8;color:#1a1208;
+  cursor:pointer;transition:all 0.18s;text-align:center;
+}
+.opt-btn:hover:not(:disabled){
+  border-color:#b07d3a;background:#fff;
+  transform:translateY(-2px);
+  box-shadow:0 4px 14px rgba(176,125,58,0.13);
+}
+.opt-btn.correct{background:#edf5ee;border-color:#5a8a60;color:#3a6b40}
+.opt-btn.wrong{background:#fdf0ee;border-color:#c8440a;color:#c8440a}
+.opt-btn:disabled{cursor:default}
+
+.feedback{
+  margin-top:1rem;padding:10px 14px;border-radius:10px;
+  font-size:0.84rem;display:none;align-items:flex-start;gap:8px;
+}
+.feedback.show{display:flex}
+.feedback.correct{background:#edf5ee;color:#3a6b40}
+.feedback.wrong{background:#fdf0ee;color:#a03020}
+.fb-icon{font-size:1.05rem;flex-shrink:0;margin-top:1px}
+
+/* CONTROLS */
+.controls{display:flex;gap:10px;align-items:center}
+.btn{
+  font-family:'Instrument Sans',sans-serif;
+  font-size:0.82rem;font-weight:500;
+  padding:10px 24px;border-radius:100px;
+  border:1.5px solid #d9d0c0;
+  background:#fff;color:#5a4e3e;cursor:pointer;transition:all 0.18s;
+}
+.btn:hover{border-color:#b07d3a;color:#b07d3a}
+.btn-main{background:#1a1208;color:#f5f0e8;border-color:#1a1208}
+.btn-main:hover{background:#2e2010;border-color:#2e2010;color:#f5f0e8}
+#nextBtn{display:none}
+#nextBtn.show{display:inline-block}
+
+.dots{display:flex;gap:6px;margin-top:1.6rem;align-items:center}
+.dot{width:6px;height:6px;border-radius:50%;background:#d9d0c0;transition:all 0.2s}
+.dot.on{background:#b07d3a;transform:scale(1.4)}
+
+/* SCORE */
+.score-screen{
+  display:none;flex-direction:column;
+  align-items:center;gap:1rem;text-align:center;
+  padding:3rem 2rem;width:100%;max-width:460px;
+}
+.score-screen.show{display:flex}
+.score-icon{font-size:2.5rem;color:#b07d3a}
+.score-title{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:700;color:#1a1208}
+.score-num{font-family:'Fraunces',serif;font-size:3.5rem;font-weight:700;color:#b07d3a;line-height:1}
+.score-sub{color:#9a8e7e;font-size:0.88rem;line-height:1.7}
+
+.footer{
+  width:100%;padding:1rem 2rem;
+  border-top:1.5px solid #e8e0d0;background:#fff;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:0.72rem;color:#9a8e7e;
+}
+
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(14px) scale(0.98)}
+  to{opacity:1;transform:none}
+}
+.card{animation:cardIn 0.35s ease both}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="tagline">A1 / A2 &nbsp;·&nbsp; Adjektive</div>
+  <h1>Adjektiv<em>kartei</em></h1>
+  <div class="designer">designed by @eduproberegova</div>
+  <div class="progress-row">
+    <div class="pbar"><div class="pfill" id="pf" style="width:0%"></div></div>
+    <div class="plabel" id="pl">0 / 20</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="selectGroup('all',this)">Alle</button>
+  <button class="tab-btn" onclick="selectGroup('appearance',this)">Äußerlichkeit</button>
+  <button class="tab-btn" onclick="selectGroup('hair',this)">Haare &amp; Augen</button>
+  <button class="tab-btn" onclick="selectGroup('character',this)">Charakter</button>
+  <button class="tab-btn" onclick="selectGroup('emotions',this)">Gefühle</button>
+</div>
+
+<div class="main">
+  <div class="card" id="quizCard"></div>
+
+  <div class="controls" id="controls">
+    <button class="btn btn-main" id="nextBtn" onclick="nextQuestion()">Weiter →</button>
+  </div>
+  <div class="dots" id="dots"></div>
+
+  <div class="score-screen" id="scoreScreen">
+    <div class="score-icon">✦</div>
+    <div class="score-title" id="scoreTitle"></div>
+    <div class="score-num" id="scoreNum"></div>
+    <div class="score-sub" id="scoreSub"></div>
+    <button class="btn btn-main" style="margin-top:0.5rem" onclick="startQuiz()">Von vorne</button>
+  </div>
+</div>
+
+<div class="footer">
+  <span id="counter">Frage 1 von 20</span>
+  <span>Deutsch · Adjektive</span>
+</div>
+
+<script>
+const words=[
+  {de:'groß',       uk:'високий',       emoji:'🧍‍♂️',group:'appearance',s:{de:'Er ist sehr ___.',uk:'Він дуже ???.'}},
+  {de:'klein',      uk:'низький',        emoji:'🤏', group:'appearance',s:{de:'Das Kind ist ___.',uk:'Дитина ???.'}},
+  {de:'jung',       uk:'молодий',        emoji:'🧒', group:'appearance',s:{de:'Sie ist noch ___.',uk:'Вона ще ???.'}},
+  {de:'alt',        uk:'старий',         emoji:'👴', group:'appearance',s:{de:'Mein Opa ist sehr ___.',uk:'Мій дідусь дуже ???.'}},
+  {de:'schön',      uk:'красивий',       emoji:'😍', group:'appearance',s:{de:'Die Frau ist sehr ___.',uk:'Жінка дуже ???.'}},
+  {de:'hässlich',   uk:'некрасивий',     emoji:'😬', group:'appearance',s:{de:'Das Bild ist ___.',uk:'Малюнок ???.'}},
+  {de:'dick',       uk:'товстий',        emoji:'🏋️',group:'appearance',s:{de:'Der Mann ist ein bisschen ___.',uk:'Чоловік трохи ???.'}},
+  {de:'dünn',       uk:'худий',          emoji:'🪶', group:'appearance',s:{de:'Das Mädchen ist sehr ___.',uk:'Дівчинка дуже ???.'}},
+  {de:'schlank',    uk:'стрункий',       emoji:'💃', group:'appearance',s:{de:'Die Tänzerin ist ___.',uk:'Танцівниця ???.'}},
+  {de:'stark',      uk:'сильний',        emoji:'💪', group:'appearance',s:{de:'Der Sportler ist sehr ___.',uk:'Спортсмен дуже ???.'}},
+  {de:'lang',       uk:'довгий',         emoji:'💇‍♀️',group:'hair',s:{de:'Sie hat ___ Haare.',uk:'Вона має ??? волосся.'}},
+  {de:'kurz',       uk:'короткий',       emoji:'💇‍♂️',group:'hair',s:{de:'Er hat ___ Haare.',uk:'Він має ??? волосся.'}},
+  {de:'blond',      uk:'блондин(ка)',     emoji:'👱‍♀️',group:'hair',s:{de:'Das Mädchen ist ___.',uk:'Дівчинка ???.'}},
+  {de:'lockig',     uk:'кучерявий',      emoji:'🌀', group:'hair',s:{de:'Ihre Haare sind ___.',uk:'Її волосся ???.'}},
+  {de:'glatt',      uk:'прямий',         emoji:'📏', group:'hair',s:{de:'Er hat ___ Haare.',uk:'Він має ??? волосся.'}},
+  {de:'blau',       uk:'блакитний',      emoji:'🔵', group:'hair',s:{de:'Sie hat ___ Augen.',uk:'Вона має ??? очі.'}},
+  {de:'grün',       uk:'зелений',        emoji:'🟢', group:'hair',s:{de:'Er hat ___ Augen.',uk:'Він має ??? очі.'}},
+  {de:'braun',      uk:'карий',          emoji:'🟤', group:'hair',s:{de:'Sie hat ___ Augen.',uk:'Вона має ??? очі.'}},
+  {de:'schwarz',    uk:'чорний',         emoji:'⚫', group:'hair',s:{de:'Sie hat ___ Haare.',uk:'Вона має ??? волосся.'}},
+  {de:'nett',       uk:'милий',          emoji:'🥰', group:'character',s:{de:'Er ist sehr ___.',uk:'Він дуже ???.'}},
+  {de:'freundlich', uk:'дружелюбний',    emoji:'🤝', group:'character',s:{de:'Die Lehrerin ist ___.',uk:'Вчителька ???.'}},
+  {de:'offen',      uk:'відкритий',      emoji:'🚪', group:'character',s:{de:'Sie ist sehr ___ und redet viel.',uk:'Вона дуже ??? і багато говорить.'}},
+  {de:'ehrlich',    uk:'чесний',         emoji:'🤞', group:'character',s:{de:'Sei ___! Lüge nicht.',uk:'Будь ???! Не бреши.'}},
+  {de:'ruhig',      uk:'спокійний',      emoji:'🧘', group:'character',s:{de:'Das Baby ist ___.',uk:'Дитина ???.'}},
+  {de:'laut',       uk:'гучний',         emoji:'📢', group:'character',s:{de:'Der Junge ist sehr ___.',uk:'Хлопець дуже ???.'}},
+  {de:'lustig',     uk:'веселий',        emoji:'😂', group:'character',s:{de:'Er ist immer ___ und macht Witze.',uk:'Він завжди ??? і жартує.'}},
+  {de:'ernst',      uk:'серйозний',      emoji:'😐', group:'character',s:{de:'Mein Chef ist sehr ___.',uk:'Мій шеф дуже ???.'}},
+  {de:'fleißig',    uk:'працьовитий',    emoji:'📚', group:'character',s:{de:'Sie ist sehr ___ und lernt jeden Tag.',uk:'Вона дуже ??? і вчиться щодня.'}},
+  {de:'faul',       uk:'лінивий',        emoji:'🛋️',group:'character',s:{de:'Er schläft den ganzen Tag – so ___!',uk:'Він спить цілий день – такий ???!'}},
+  {de:'intelligent',uk:'розумний',       emoji:'🧠', group:'character',s:{de:'Das Kind ist sehr ___.',uk:'Дитина дуже ???.'}},
+  {de:'dumm',       uk:'дурний',         emoji:'🐑', group:'character',s:{de:'Das war eine ___ Idee.',uk:'Це була ??? ідея.'}},
+  {de:'glücklich',  uk:'щасливий',       emoji:'😊', group:'emotions',s:{de:'Ich bin heute sehr ___.',uk:'Я сьогодні дуже ???.'}},
+  {de:'traurig',    uk:'сумний',         emoji:'😢', group:'emotions',s:{de:'Warum bist du ___?',uk:'Чому ти ????'}},
+  {de:'müde',       uk:'втомлений',      emoji:'😴', group:'emotions',s:{de:'Nach der Arbeit bin ich sehr ___.',uk:'Після роботи я дуже ???.'}},
+  {de:'krank',      uk:'хворий',         emoji:'🤒', group:'emotions',s:{de:'Ich bin ___ und muss zum Arzt.',uk:'Я ??? і маю йти до лікаря.'}},
+  {de:'nervös',     uk:'нервовий',       emoji:'😰', group:'emotions',s:{de:'Vor dem Examen bin ich immer ___.',uk:'Перед іспитом я завжди ???.'}},
+  {de:'entspannt',  uk:'розслаблений',   emoji:'😌', group:'emotions',s:{de:'Am Wochenende bin ich ___.',uk:'У вихідні я ???.'}},
+  {de:'gestresst',  uk:'стресований',    emoji:'😤', group:'emotions',s:{de:'Die Mutter ist sehr ___.',uk:'Мама дуже ???.'}},
+  {de:'zufrieden',  uk:'задоволений',    emoji:'🙂', group:'emotions',s:{de:'Er ist mit seinem Job ___.',uk:'Він ??? своєю роботою.'}},
+  {de:'wütend',     uk:'злий',           emoji:'😡', group:'emotions',s:{de:'Warum bist du so ___?',uk:'Чому ти такий ????'}},
+  {de:'verliebt',   uk:'закоханий',      emoji:'😍', group:'emotions',s:{de:'Er ist total ___.',uk:'Він повністю ???.'}},
+];
+
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b}
+
+let queue=[],idx=0,correct=0,wrong=0,answered=false,activeGroup='all';
+
+function selectGroup(g,el){
+  activeGroup=g;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  startQuiz();
+}
+
+function startQuiz(){
+  const pool=activeGroup==='all'?words:words.filter(w=>w.group===activeGroup);
+  queue=shuffle([...pool]).slice(0,Math.min(20,pool.length));
+  idx=0;correct=0;wrong=0;
+  document.getElementById('scoreScreen').classList.remove('show');
+  document.getElementById('quizCard').style.display='block';
+  document.getElementById('controls').style.display='flex';
+  document.getElementById('dots').style.display='flex';
+  render();
+}
+
+function getWrong(word){
+  return shuffle(words.filter(w=>w.de!==word.de)).slice(0,3).map(w=>w.de);
+}
+
+function render(){
+  answered=false;
+  const total=queue.length;
+  document.getElementById('pf').style.width=Math.round(idx/total*100)+'%';
+  document.getElementById('pl').textContent=idx+' / '+total;
+  document.getElementById('counter').textContent='Frage '+(idx+1)+' von '+total;
+  document.getElementById('nextBtn').classList.remove('show');
+
+  const w=queue[idx];
+  const opts=shuffle([w.de,...getWrong(w)]);
+  const sentHTML=w.s.de.replace('___',`<span class="blank" id="blank">___</span>`);
+
+  document.getElementById('quizCard').innerHTML=`
+    <div class="emoji-hint">${w.emoji}</div>
+    <div class="sentence">${sentHTML}</div>
+    <div class="options">
+      ${opts.map(o=>`<button class="opt-btn" onclick="choose('${o}','${w.de}',this)">${o}</button>`).join('')}
+    </div>
+    <div class="feedback" id="fb">
+      <span class="fb-icon" id="fbIcon"></span>
+      <span id="fbText"></span>
+    </div>
+  `;
+
+  buildDots();
+  const card=document.getElementById('quizCard');
+  card.style.animation='none';void card.offsetWidth;card.style.animation='cardIn 0.35s ease both';
+}
+
+function choose(chosen,correctWord,btn){
+  if(answered)return;
+  answered=true;
+  const blank=document.getElementById('blank');
+  const fb=document.getElementById('fb');
+  const w=queue[idx];
+  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+
+  if(chosen===correctWord){
+    btn.classList.add('correct');
+    blank.textContent=correctWord;blank.classList.add('correct');
+    fb.className='feedback show correct';
+    document.getElementById('fbIcon').textContent='✓';
+    document.getElementById('fbText').innerHTML=`<strong>${correctWord}</strong> — ${w.uk}`;
+    correct++;
+  } else {
+    btn.classList.add('wrong');
+    blank.textContent=chosen;blank.classList.add('wrong');
+    document.querySelectorAll('.opt-btn').forEach(b=>{if(b.textContent===correctWord)b.classList.add('correct');});
+    fb.className='feedback show wrong';
+    document.getElementById('fbIcon').textContent='✗';
+    document.getElementById('fbText').innerHTML=`Richtig: <strong>${correctWord}</strong> — ${w.uk}`;
+    wrong++;
+  }
+
+  document.getElementById('pl').textContent=idx+' / '+queue.length;
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function nextQuestion(){
+  idx++;
+  if(idx>=queue.length){showScore();}else{render();}
+}
+
+function showScore(){
+  document.getElementById('quizCard').style.display='none';
+  document.getElementById('controls').style.display='none';
+  document.getElementById('dots').innerHTML='';
+  document.getElementById('dots').style.display='none';
+  const total=queue.length;
+  const pct=Math.round(correct/total*100);
+  let sub;
+  if(pct>=80)sub='Ausgezeichnet! Du kennst die Adjektive sehr gut.';
+  else if(pct>=50)sub='Gut gemacht! Üb weiter – du schaffst das!';
+  else sub='Nicht schlimm – noch eine Runde und du lernst es!';
+  document.getElementById('scoreScreen').classList.add('show');
+  document.getElementById('scoreTitle').textContent='Alle Karten durch!';
+  document.getElementById('scoreNum').textContent=correct+' / '+total;
+  document.getElementById('scoreSub').textContent=sub;
+  document.getElementById('pf').style.width='100%';
+  document.getElementById('pl').textContent=total+' / '+total;
+  document.getElementById('counter').textContent='Fertig!';
+}
+
+function buildDots(){
+  const el=document.getElementById('dots');el.innerHTML='';
+  const max=Math.min(queue.length,15);
+  for(let i=0;i<max;i++){
+    const d=document.createElement('div');
+    d.className='dot'+(i===idx?' on':'');
+    el.appendChild(d);
+  }
+}
+
+startQuiz();
+</script>
+</body>
+</html>
